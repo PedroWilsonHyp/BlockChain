@@ -1,0 +1,15 @@
+# Arquivos compilados
+*.class
+bin/
+build/
+
+# Metadados e configuracoes do Eclipse
+.metadata/
+.settings/
+.classpath
+.project
+.recommenders/
+
+# Arquivos de SO
+.DS_Store
+Thumbs.db
