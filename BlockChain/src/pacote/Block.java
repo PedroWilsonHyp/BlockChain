@@ -3,17 +3,13 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
-/**
- * Bloco da blockchain. Serializável para trafegar dentro de NetworkMessage
- * (ObjectOutputStream / ObjectInputStream).
- */
 public class Block implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private int index;
     private long timestamp;
-    private String data;            // não é final: permite corromper o bloco na demo
+    private String data;            
     private String previousHash;
     private String hash;
     private int nonce;
@@ -27,13 +23,13 @@ public class Block implements Serializable {
         this.hash = calcularHash();
     }
 
-    /** SHA-256 de index + previousHash + timestamp + nonce + data. */
+   
     public String calcularHash() {
         return sha256(
                 index + previousHash + timestamp + nonce + data);
     }
 
-    /** Proof of Work: incrementa o nonce até o hash começar com 'difficulty' zeros. */
+ 
     public void minerar(int difficulty) {
         String target = "0".repeat(difficulty);
         while (!hash.startsWith(target)) {
@@ -42,7 +38,7 @@ public class Block implements Serializable {
         }
     }
 
-    /** Altera os dados SEM recalcular o hash (simula adulteração; usado na demo de REJECT). */
+  
     public void tamperData(String newData) {
         this.data = newData;
     }
@@ -72,7 +68,7 @@ public class Block implements Serializable {
         return h == null ? "null" : (h.length() <= 10 ? h : h.substring(0, 10) + "…");
     }
 
-    /** SHA-256 em hexadecimal minúsculo. */
+    
     private static String sha256(String input) {
         try {
             byte[] h = MessageDigest.getInstance("SHA-256").digest(input.getBytes(StandardCharsets.UTF_8));

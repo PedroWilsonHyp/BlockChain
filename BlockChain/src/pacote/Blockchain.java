@@ -2,17 +2,12 @@ package pacote;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Guarda e valida a cadeia. Thread-safe: o P2PServer/ConnectionHandler (threads de rede)
- * e o Menu (thread principal) acessam a mesma instância.
- */
+
 public class Blockchain {
 
-    /** Genesis fixo: idêntico em todos os nós (timestamp, dados e nonce constantes). */
-    private static final long GENESIS_TIMESTAMP = 1_700_000_000_000L;
+   private static final long GENESIS_TIMESTAMP = 1_700_000_000_000L;
     private static final Block GENESIS = new Block(0, GENESIS_TIMESTAMP, "Genesis Block", "0");
 
-    /** Resultado de tryReplace(); 'motivo' vai no payload do REJECT quando rejeitada. */
     public static final class ResultadoTroca {
         public final boolean aceita;
         public final String motivo;
@@ -37,7 +32,6 @@ public class Blockchain {
         chain.add(genesis());
     }
 
-    /** Cópia do bloco gênese (cada cadeia tem sua própria instância, para poder ser corrompida). */
     public static Block genesis() {
         return new Block(GENESIS.getIndex(), GENESIS.getTimestamp(),
                 GENESIS.getData(), GENESIS.getPreviousHash());
@@ -49,18 +43,10 @@ public class Blockchain {
 
     public synchronized Block getLast() { return chain.get(chain.size() - 1); }
 
-    /** Cópia da cadeia, pronta para ir como payload de BLOCKCHAIN_COPY (ArrayList<Block>). */
     public synchronized ArrayList<Block> getChainCopy() {
         return new ArrayList<>(chain);
     }
 
-    // ---------------------------------------------------------------- mineração
-
-    /**
-     * Minera um novo bloco em cima da ponta atual da cadeia e o adiciona.
-     * A mineração roda fora do lock; se a cadeia mudar no meio (ex.: chegou uma cadeia maior
-     * da rede), o bloco é descartado e o método devolve null.
-     */
     public Block mineBlock(String data) {
         Block prev;
         synchronized (this) {
@@ -70,30 +56,22 @@ public class Blockchain {
         block.minerar(difficulty);
         synchronized (this) {
             if (!getLast().getHash().equals(prev.getHash())) {
-                return null; // ponta mudou durante a mineração
-            }
+                return null; 
+                }
             chain.add(block);
         }
         return block;
     }
 
-    // ---------------------------------------------------------------- validação
-
-    /** Valida a cadeia local. */
-    public synchronized boolean ChainValida() {
+   public synchronized boolean ChainValida() {
         return ChainValida(chain);
     }
 
-    /** Valida uma cadeia qualquer (ex.: recebida da rede) com a dificuldade local. */
-    public boolean ChainValida(List<Block> candidate) {
+   public boolean ChainValida(List<Block> candidate) {
         return validar(candidate, difficulty) == null;
     }
 
-    /**
-     * Verifica integridade e criptografia. Devolve null se válida, ou a descrição do primeiro erro.
-     * Regras: começa no gênese fixo; para cada bloco i>=1: índice sequencial, hash recalculado igual
-     * ao registrado, previousHash igual ao hash do bloco anterior, e PoW (hash com 'difficulty' zeros).
-     */
+
     public static String validar(List<Block> candidate, int difficulty) {
         if (candidate == null || candidate.isEmpty()) return "cadeia vazia";
 
@@ -126,12 +104,6 @@ public class Blockchain {
         return null;
     }
 
-    // ---------------------------------------------------------------- consenso
-
-    /**
-     * Regra da maior cadeia válida: substitui a cadeia local somente se a recebida
-     * for válida E estritamente maior (recebida.size() > local.size()).
-     */
     public synchronized ResultadoTroca tryReplace(List<Block> received) {
         if (received == null) {
             return new ResultadoTroca(false, "Cadeia nula");
@@ -149,9 +121,6 @@ public class Blockchain {
         return new ResultadoTroca(true, "cadeia substituída: tamanho " + old + " -> " + chain.size());
     }
 
-    // ---------------------------------------------------------------- demo
-
-    /** Adultera os dados de um bloco local sem refazer o hash (para demonstrar o REJECT ao vivo). */
     public synchronized boolean corruptBlock(int index, String newData) {
         if (index < 0 || index >= chain.size()) return false;
         chain.get(index).tamperData(newData);
