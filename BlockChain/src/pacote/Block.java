@@ -1,6 +1,7 @@
 package pacote;
-
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 /**
  * Bloco da blockchain. Serializável para trafegar dentro de NetworkMessage
@@ -28,7 +29,7 @@ public class Block implements Serializable {
 
     /** SHA-256 de index + previousHash + timestamp + nonce + data. */
     public String calculateHash() {
-        return StringUtil.applySha256(
+        return sha256(
                 index + previousHash + timestamp + nonce + data);
     }
 
@@ -54,13 +55,11 @@ public class Block implements Serializable {
     public int getNonce() { return nonce; }
 
     public void setIndex(int index) {this.index = index;}
-    public void setTimeStamp(float timestamo) {this.timestamp = timestamp;}
+    public void setTimeStamp(long timestamp) {this.timestamp = timestamp;}
     public void setData(String data) {this.data = data;}
     public void setPreviousHash(String previousHash) {this.previousHash = previousHash;}
 
-    
-    
-    
+
     
     @Override
     public String toString() {
@@ -71,5 +70,17 @@ public class Block implements Serializable {
 
     static String shortHash(String h) {
         return h == null ? "null" : (h.length() <= 10 ? h : h.substring(0, 10) + "…");
+    }
+
+    /** SHA-256 em hexadecimal minúsculo. */
+    private static String sha256(String input) {
+        try {
+            byte[] h = MessageDigest.getInstance("SHA-256").digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(h.length * 2);
+            for (byte b : h) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
