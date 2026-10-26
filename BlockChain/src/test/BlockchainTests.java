@@ -22,58 +22,58 @@ public class BlockchainTests {
                         .equals(new Blockchain(D).getChainCopy().get(0).getHash()));
 
         Blockchain a = new Blockchain(D);
-        check("cadeia só com gênese é válida", a.isChainValid());
+        check("cadeia só com gênese é válida", a.ChainValida());
 
         a.mineBlock("b1"); a.mineBlock("b2"); a.mineBlock("b3");
         check("cadeia minerada tem 4 blocos", a.size() == 4);
-        check("cadeia minerada é válida", a.isChainValid());
+        check("cadeia minerada é válida", a.ChainValida());
         check("blocos minerados respeitam a dificuldade",
                 a.getChainCopy().stream().skip(1).allMatch(b -> b.getHash().startsWith("00")));
 
         // adulteração de dados
         Blockchain t = copyOf(a, D);
         t.corruptBlock(2, "hackeado");
-        check("dados adulterados -> inválida", !t.isChainValid());
+        check("dados adulterados -> inválida", !t.ChainValida());
 
         // encadeamento quebrado (previousHash errado) com hash coerente
         List<Block> broken = a.getChainCopy();
         Block b2 = broken.get(2);
         Block fake = new Block(2, b2.getTimestamp(), b2.getData(), "abc");
-        fake.mine(D);
+        fake.minerar(D);
         broken.set(2, fake);
-        check("encadeamento quebrado -> inválida", Blockchain.validate(broken, D) != null);
+        check("encadeamento quebrado -> inválida", Blockchain.validar(broken, D) != null);
 
         // bloco sem PoW
         List<Block> noPow = a.getChainCopy();
         noPow.add(new Block(4, System.currentTimeMillis(), "sem PoW", a.getLast().getHash()));
-        check("bloco não minerado -> inválida", Blockchain.validate(noPow, D) != null);
+        check("bloco não minerado -> inválida", Blockchain.validar(noPow, D) != null);
 
         // gênese diferente
         List<Block> otherGenesis = a.getChainCopy();
         otherGenesis.set(0, new Block(0, 1L, "outro gênese", "0"));
-        check("gênese diferente -> inválida", Blockchain.validate(otherGenesis, D) != null);
+        check("gênese diferente -> inválida", Blockchain.validar(otherGenesis, D) != null);
 
         check("cadeia vazia/nula -> inválida",
-                Blockchain.validate(new ArrayList<>(), D) != null && Blockchain.validate(null, D) != null);
+                Blockchain.validar(new ArrayList<>(), D) != null && Blockchain.validar(null, D) != null);
 
         // consenso: maior cadeia válida
         Blockchain local = new Blockchain(D);
         local.mineBlock("x");
-        Blockchain.ReplaceResult r = local.tryReplace(a.getChainCopy());
-        check("cadeia válida e maior -> aceita", r.accepted && local.size() == 4);
+        Blockchain.ResultadoTroca r = local.tryReplace(a.getChainCopy());
+        check("cadeia válida e maior -> aceita", r.aceita && local.size() == 4);
 
         Blockchain l2 = copyOf(a, D);
         r = l2.tryReplace(new Blockchain(D).getChainCopy());
-        check("cadeia menor -> rejeitada", !r.accepted && r.reason.contains("menor") && l2.size() == 4);
+        check("cadeia menor -> rejeitada", !r.aceita && r.motivo.contains("menor") && l2.size() == 4);
 
         r = l2.tryReplace(a.getChainCopy());
-        check("cadeia de tamanho igual -> rejeitada", !r.accepted && l2.size() == 4);
+        check("cadeia de tamanho igual -> rejeitada", !r.aceita && l2.size() == 4);
 
         Blockchain l3 = new Blockchain(D);
         List<Block> bad = copyOf(a, D).getChainCopy(); // cópia profunda: não pode mexer nos blocos de 'a'
         bad.get(1).tamperData("fraude");
         r = l3.tryReplace(bad);
-        check("cadeia maior porém adulterada -> rejeitada", !r.accepted && r.reason.contains("inválida") && l3.size() == 1);
+        check("cadeia maior porém adulterada -> rejeitada", !r.aceita && r.motivo.contains("inválida") && l3.size() == 1);
 
         // tryReplace copia a lista: mexer na original depois não afeta a cadeia local
         Blockchain l4 = new Blockchain(D);
@@ -88,7 +88,7 @@ public class BlockchainTests {
         @SuppressWarnings("unchecked")
         ArrayList<Block> back = (ArrayList<Block>) new ObjectInputStream(
                 new ByteArrayInputStream(bos.toByteArray())).readObject();
-        check("serialização preserva a cadeia válida", Blockchain.validate(back, D) == null && back.size() == 4);
+        check("serialização preserva a cadeia válida", Blockchain.validar(back, D) == null && back.size() == 4);
 
         // mineração descartada quando a ponta muda: simulado com tryReplace antes de adicionar
         // (mineBlock é síncrono aqui; basta garantir que blocos sucessivos se encadeiam)
@@ -119,7 +119,7 @@ public class BlockchainTests {
         String script = "1\nprimeiro\n1\nsegundo\n3\n5\n1\n2\n0\n";
         new Menu(mb, fake2, "NodeTest", new ByteArrayInputStream(script.getBytes())).run();
         check("menu: minerou 2 blocos e fez broadcast 2x", mb.size() == 3 && broadcasts[0] == 2);
-        check("menu: corromper deixa a cadeia inválida", !mb.isChainValid());
+        check("menu: corromper deixa a cadeia inválida", !mb.ChainValida());
 
         System.out.println("\n" + passed + " passaram, " + failed + " falharam.");
         if (failed > 0) System.exit(1);

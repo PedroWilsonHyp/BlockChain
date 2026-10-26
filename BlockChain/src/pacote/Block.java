@@ -24,21 +24,21 @@ public class Block implements Serializable {
         setData(data);
         setPreviousHash(previousHash);
         this.nonce = 0;
-        this.hash = calculateHash();
+        this.hash = calcularHash();
     }
 
     /** SHA-256 de index + previousHash + timestamp + nonce + data. */
-    public String calculateHash() {
+    public String calcularHash() {
         return sha256(
                 index + previousHash + timestamp + nonce + data);
     }
 
     /** Proof of Work: incrementa o nonce até o hash começar com 'difficulty' zeros. */
-    public void mine(int difficulty) {
+    public void minerar(int difficulty) {
         String target = "0".repeat(difficulty);
         while (!hash.startsWith(target)) {
             nonce++;
-            hash = calculateHash();
+            hash = calcularHash();
         }
     }
 

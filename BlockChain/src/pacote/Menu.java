@@ -184,7 +184,7 @@ public class Menu {
             System.out.println("  previousHash: " + b.getPreviousHash());
             System.out.println("  hash        : " + b.getHash());
         }
-        String error = Blockchain.validate(chain, blockchain.getDifficulty());
+        String error = Blockchain.validar(chain, blockchain.getDifficulty());
         System.out.println();
         System.out.println(error == null
                 ? "Cadeia VÁLIDA (" + chain.size() + " blocos)."
@@ -213,7 +213,7 @@ public class Menu {
             return;
         }
         log("bloco #%d corrompido localmente (hash não foi recalculado). isChainValid() = %s",
-                idx, blockchain.isChainValid());
+                idx, blockchain.ChainValida());
     }
 
     private String readLine() { return in.hasNextLine() ? in.nextLine() : null; }

@@ -12,19 +12,19 @@ public class Blockchain {
     private static final long GENESIS_TIMESTAMP = 1_700_000_000_000L;
     private static final Block GENESIS = new Block(0, GENESIS_TIMESTAMP, "Genesis Block", "0");
 
-    /** Resultado de tryReplace(); 'reason' vai no payload do REJECT quando rejeitada. */
-    public static final class ReplaceResult {
-        public final boolean accepted;
-        public final String reason;
+    /** Resultado de tryReplace(); 'motivo' vai no payload do REJECT quando rejeitada. */
+    public static final class ResultadoTroca {
+        public final boolean aceita;
+        public final String motivo;
 
-        private ReplaceResult(boolean accepted, String reason) {
-            this.accepted = accepted;
-            this.reason = reason;
+        private ResultadoTroca(boolean aceita, String motivo) {
+            this.aceita = aceita;
+            this.motivo = motivo;
         }
 
         @Override
         public String toString() {
-            return (accepted ? "aceita" : "rejeitada") + " (" + reason + ")";
+            return (aceita ? "aceita" : "rejeitada") + " (" + motivo + ")";
         }
     }
 
@@ -67,7 +67,7 @@ public class Blockchain {
             prev = getLast();
         }
         Block block = new Block(prev.getIndex() + 1, System.currentTimeMillis(), data, prev.getHash());
-        block.mine(difficulty);
+        block.minerar(difficulty);
         synchronized (this) {
             if (!getLast().getHash().equals(prev.getHash())) {
                 return null; // ponta mudou durante a mineração
@@ -80,13 +80,13 @@ public class Blockchain {
     // ---------------------------------------------------------------- validação
 
     /** Valida a cadeia local. */
-    public synchronized boolean isChainValid() {
-        return isChainValid(chain);
+    public synchronized boolean ChainValida() {
+        return ChainValida(chain);
     }
 
     /** Valida uma cadeia qualquer (ex.: recebida da rede) com a dificuldade local. */
-    public boolean isChainValid(List<Block> candidate) {
-        return validate(candidate, difficulty) == null;
+    public boolean ChainValida(List<Block> candidate) {
+        return validar(candidate, difficulty) == null;
     }
 
     /**
@@ -94,13 +94,13 @@ public class Blockchain {
      * Regras: começa no gênese fixo; para cada bloco i>=1: índice sequencial, hash recalculado igual
      * ao registrado, previousHash igual ao hash do bloco anterior, e PoW (hash com 'difficulty' zeros).
      */
-    public static String validate(List<Block> candidate, int difficulty) {
+    public static String validar(List<Block> candidate, int difficulty) {
         if (candidate == null || candidate.isEmpty()) return "cadeia vazia";
 
         Block first = candidate.get(0);
         if (first == null) return "bloco nulo na posição 0";
         if (!first.getHash().equals(GENESIS.getHash())
-                || !first.getHash().equals(first.calculateHash())
+                || !first.getHash().equals(first.calcularHash())
                 || first.getIndex() != 0) {
             return "bloco gênese diferente do gênese esperado";
         }
@@ -113,7 +113,7 @@ public class Blockchain {
             if (cur.getIndex() != i) {
                 return "índice incorreto no bloco " + i + " (veio " + cur.getIndex() + ")";
             }
-            if (!cur.getHash().equals(cur.calculateHash())) {
+            if (!cur.getHash().equals(cur.calcularHash())) {
                 return "hash do bloco " + i + " não confere com seu conteúdo (dados adulterados)";
             }
             if (!cur.getPreviousHash().equals(prev.getHash())) {
@@ -132,21 +132,21 @@ public class Blockchain {
      * Regra da maior cadeia válida: substitui a cadeia local somente se a recebida
      * for válida E estritamente maior (recebida.size() > local.size()).
      */
-    public synchronized ReplaceResult tryReplace(List<Block> received) {
+    public synchronized ResultadoTroca tryReplace(List<Block> received) {
         if (received == null) {
-            return new ReplaceResult(false, "Cadeia nula");
+            return new ResultadoTroca(false, "Cadeia nula");
         }
-        String error = validate(received, difficulty);
+        String error = validar(received, difficulty);
         if (error != null) {
-            return new ReplaceResult(false, "Cadeia inválida: " + error);
+            return new ResultadoTroca(false, "Cadeia inválida: " + error);
         }
         if (received.size() <= chain.size()) {
-            return new ReplaceResult(false, "Tamanho menor que a cadeia local");
+            return new ResultadoTroca(false, "Tamanho menor que a cadeia local");
         }
         int old = chain.size();
         chain.clear();
         chain.addAll(received);
-        return new ReplaceResult(true, "cadeia substituída: tamanho " + old + " -> " + chain.size());
+        return new ResultadoTroca(true, "cadeia substituída: tamanho " + old + " -> " + chain.size());
     }
 
     // ---------------------------------------------------------------- demo
