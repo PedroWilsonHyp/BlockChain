@@ -10,18 +10,18 @@ public class Block implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final int index;
-    private final long timestamp;
+    private int index;
+    private long timestamp;
     private String data;            // não é final: permite corromper o bloco na demo
-    private final String previousHash;
+    private String previousHash;
     private String hash;
     private int nonce;
 
     public Block(int index, long timestamp, String data, String previousHash) {
-        this.index = index;
-        this.timestamp = timestamp;
-        this.data = data;
-        this.previousHash = previousHash;
+        setIndex(index);
+        setTimeStamp(timestamp);
+        setData(data);
+        setPreviousHash(previousHash);
         this.nonce = 0;
         this.hash = calculateHash();
     }
@@ -53,6 +53,15 @@ public class Block implements Serializable {
     public String getHash() { return hash; }
     public int getNonce() { return nonce; }
 
+    public void setIndex(int index) {this.index = index;}
+    public void setTimeStamp(float timestamo) {this.timestamp = timestamp;}
+    public void setData(String data) {this.data = data;}
+    public void setPreviousHash(String previousHash) {this.previousHash = previousHash;}
+
+    
+    
+    
+    
     @Override
     public String toString() {
         return "Block{#" + index + ", hash=" + shortHash(hash)
