@@ -6,6 +6,7 @@ import java.util.Collection;
 public final class NetworkMessage implements Serializable  {
     private static final long serialVersionUID = 1L; 
     private final MessageType type;
+    public static final String VERSAO_PROTOCOLO = "V1.0";
     private final Serializable payload;
     public enum MessageType{
         HELLO,

@@ -21,7 +21,7 @@ public class PeerClient {
 		return new InetSocketAddress(parts[0], Integer.parseInt(parts[1]));
 	}
 
-	public NetworkMessage sendAndReceive(String endereco, NetworkMessage mensagem) throws IOException {
+	public NetworkMessage enviarEReceber(String endereco, NetworkMessage mensagem) throws IOException {
 		InetSocketAddress destino = extrairEndereco(endereco);
 
 		try (Socket socket = new Socket()){
