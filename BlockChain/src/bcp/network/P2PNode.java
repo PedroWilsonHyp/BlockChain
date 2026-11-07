@@ -35,13 +35,11 @@ public class P2PNode {
         this.server = new P2PServer(porta, peerManager, blockchain, this::broadcastChain);
     }
 
-    // ---------- Ciclo de vida ----------
-
+    
     public void iniciar() throws IOException {
         server.start();
     }
 
-    // ---------- Fluxo A: bootstrap e descoberta ----------
 
     public void bootstrap(String seed) {
         System.out.println("[BOOT] Conectando ao seed " + seed);
