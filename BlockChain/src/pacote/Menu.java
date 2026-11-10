@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class Menu {
 
-    /** Contrato com a rede: o P2PNode (do seu amigo) implementa estes 3 métodos. */
+    /** Contrato com a rede: o P2PNode  implementa estes 3 métodos. */
     public interface NodeActions {
         List<String> getPeers();
         void syncNow();
